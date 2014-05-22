@@ -1,0 +1,39 @@
+DECLARE @total_cpu_time DECIMAL
+select @total_cpu_time = sum(total_worker_time) from sys.dm_exec_query_stats
+DECLARE @total_elapsed_time DECIMAL
+select @total_elapsed_time = sum(total_elapsed_time) from sys.dm_exec_query_stats
+
+
+-- CPU Bound by highest average
+select top 20	(select top 1 text from sys.dm_exec_sql_text(sql_handle)) AS SQL, 
+				execution_count, 
+				total_worker_time/1000 as [total cpu(ms)], 
+				total_worker_time/execution_count/1000 as [avg elapsed(ms)], 
+				total_worker_time/@total_cpu_time*100 as [% of total cpu]
+from sys.dm_exec_query_stats 
+order by 4 desc
+-- CPU Bound by highest total
+select top 20	(select top 1 text from sys.dm_exec_sql_text(sql_handle)) AS SQL, 
+				execution_count, 
+				total_worker_time/1000 as [total cpu(ms)], 
+				total_worker_time/execution_count/1000 as [avg elapsed(ms)],
+				total_worker_time/@total_cpu_time*100 as [% of total cpu]
+from sys.dm_exec_query_stats 
+order by 3 desc
+-- Elapsed by highest average
+select top 20	(select top 1 text from sys.dm_exec_sql_text(sql_handle)) AS SQL,
+				execution_count, 
+				total_elapsed_time/1000 as [total elapsed(ms)], 
+				total_elapsed_time/execution_count/1000 as [avg elapsed(ms)],
+				total_elapsed_time/@total_elapsed_time*100 as [% of total elapsed]
+from sys.dm_exec_query_stats 
+order by 4 desc
+-- Elapsed by highest total
+select top 20	(select top 1 text from sys.dm_exec_sql_text(sql_handle)) AS SQL,
+				execution_count, 
+				total_elapsed_time/1000 as [total elapsed(ms)], 
+				total_elapsed_time/execution_count/1000 as [avg elapsed(ms)],
+				total_elapsed_time/@total_elapsed_time*100 as [% of total elapsed]
+from sys.dm_exec_query_stats 
+order by 3 desc
+
